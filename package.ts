@@ -5,7 +5,8 @@ rmSync("lambda.zip", { force: true });
 const result = spawnSync(
   "zip",
   [
-    "-qr", "lambda.zip", "dist/index.js", "node_modules", "package.json", "package-lock.json",
+    "-qr", "lambda.zip", "dist/index.js", "dist/github.js",
+    "node_modules", "package.json", "package-lock.json",
     "-x", "node_modules/typescript/*", "node_modules/@typescript/*",
     "node_modules/@types/*", "node_modules/undici-types/*", "node_modules/.bin/*",
   ],

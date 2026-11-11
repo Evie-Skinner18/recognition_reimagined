@@ -30,6 +30,49 @@ Shared helpers handle configuration, authenticated Jira requests, and story-poin
 Issues are processed as they arrive, without retaining every issue payload in memory.
 The upload only starts after the entire stream has been consumed successfully.
 
+## Count GitHub pull requests
+
+The GitHub handler runs separately from Jira.
+It counts pull requests created by a GitHub user in an organisation, regardless of creation date or current status, and writes a separate object to the same S3 bucket.
+For example:
+
+```json
+{ "name": "Evie-Skinner18", "pullRequests": 42 }
+```
+
+Add these variables to your local `.env`, alongside the existing `AWS_REGION` and `S3_BUCKET`:
+
+```dotenv
+GITHUB_USERNAME=Evie-Skinner18
+GITHUB_ORGANISATION=edfenergy
+GITHUB_TOKEN=your-approved-token
+GITHUB_S3_KEY=github/edfenergy/pr-count.json
+```
+
+Replace the placeholder token with an approved credential in your local file.
+Use a different object key from `S3_KEY` so the Jira summary is not overwritten.
+The AWS identity needs `s3:PutObject` permission on the GitHub object as well as the Jira object.
+Run the GitHub handler locally with:
+
+```sh
+npm run start:github
+```
+
+For Lambda, the same ZIP can be used with the handler `dist/github.handler`.
+Set the GitHub variables, `AWS_REGION` and `S3_BUCKET` on that function, and use an execution role with permission to write its object.
+The GitHub handler does not require the Jira variables.
+It returns the summary after S3 confirms the upload.
+
+The GitHub token must have access to the relevant repositories and any organisation SSO authorisation required.
+See the [GitHub search API](https://docs.github.com/en/rest/search/search#search-issues-and-pull-requests) for token permissions and search limits.
+The count includes only repositories visible to the token, which may exclude private repositories.
+Search can examine at most 4,000 repositories, so the count may not cover a larger organisation.
+GitHub search indexing is not necessarily immediate.
+The handler uses `total_count` rather than fetching PR pages and rejects results marked incomplete.
+HTTP errors, including rate limits, fail the invocation without writing an object.
+Each successful invocation replaces the configured GitHub S3 object.
+PR counts are not a complete measure of individual contribution or productivity.
+
 ## Local setup
 
 Use Node.js 22 and npm.
