@@ -1,0 +1,24 @@
+{
+  "name": "recognition-reimagined",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.16.0 <23"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "start": "npm run build && node --env-file=.env dist/local.js",
+    "start:github": "npm run build && node --env-file=.env dist/local-github.js",
+    "package": "npm run build && node dist/package.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1166.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.00.0",
+    "typescript": "7.0.2"
+  }
+}
